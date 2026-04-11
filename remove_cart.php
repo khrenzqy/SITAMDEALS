@@ -1,4 +1,4 @@
-/*
+
 <script src="https://cdn.tailwindcss.com"></script>
 <script>
 tailwind.config = {
@@ -18,7 +18,7 @@ tailwind.config = {
   }
 }
 </script>
-*/
+
 <?php
 session_start();
 unset($_SESSION['cart'][$_GET['i']]);

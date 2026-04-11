@@ -1,4 +1,4 @@
-/*
+
 <script src="https://cdn.tailwindcss.com"></script>
 <script>
 tailwind.config = {
@@ -18,7 +18,8 @@ tailwind.config = {
   }
 }
 </script>
-*/
+
+
 <?php
 session_start();
 $_SESSION['cart'][]=$_POST;

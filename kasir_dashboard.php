@@ -1,4 +1,3 @@
-
 <script src="https://cdn.tailwindcss.com"></script>
 <script>
 tailwind.config = {
@@ -19,7 +18,9 @@ tailwind.config = {
 }
 </script>
 
+
 <?php
-$conn = new mysqli("localhost","root","","sitamdeals");
-if ($conn->connect_error) die("Connection failed: " . $conn->connect_error);
+session_start();
+include 'db.php';
+$data=$conn->query("SELECT o.*,u.name as customer FROM orders o JOIN users u ON o.user_id=u.id");
 ?>
