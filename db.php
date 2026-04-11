@@ -20,6 +20,18 @@ tailwind.config = {
 </script>
 
 <?php
-$conn = new mysqli("localhost","root","","sitamdeals");
-if ($conn->connect_error) die("Connection failed: " . $conn->connect_error);
+$host = "localhost";
+$user = "root";
+$password = "";
+$database = "sitamdeals";
+
+$koneksi = mysqli_connect($host, $user, $password, $database);
+
+// Error handling
+if (!$koneksi) {
+    die("Koneksi database gagal: " . mysqli_connect_error());
+}
+
+// Optional: set charset biar aman
+mysqli_set_charset($koneksi, "utf8");
 ?>
