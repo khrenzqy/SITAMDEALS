@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -17,6 +18,28 @@
     </script>
 </head>
 <body class="bg-gray-50 min-h-screen flex">
+=======
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          forest: '#1e3a2f',
+          moss: '#2e5c42',
+          sage: '#4a8c64',
+          leaf: '#72b88a',
+          mint: '#b8d9c5',
+          cream: '#f7f4ee',
+          gold: '#c9a84c',
+          dark: '#111a15'
+        }
+      }
+    }
+  }
+</script>
+
+>>>>>>> 4fc8bc88fd4aa750a16e596878db46bdc4c67bb4
 
 <?php
 session_start();
@@ -24,6 +47,7 @@ session_start();
 // if($_SESSION['user']['role'] != 'admin') { header("Location: index.php"); exit; }
 
 include 'db.php';
+<<<<<<< HEAD
 $data = $conn->query("SELECT o.*, u.name as customer FROM orders o JOIN users u ON o.user_id=u.id ORDER BY o.id DESC");
 ?>
 
@@ -99,3 +123,7 @@ $data = $conn->query("SELECT o.*, u.name as customer FROM orders o JOIN users u 
 
 </body>
 </html>
+=======
+$data = $conn->query("SELECT o.*,u.name as customer FROM orders o JOIN users u ON o.user_id=u.id");
+?>
+>>>>>>> 4fc8bc88fd4aa750a16e596878db46bdc4c67bb4
