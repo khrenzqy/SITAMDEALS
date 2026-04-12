@@ -1,3 +1,5 @@
+<<<<<<< HEAD
+=======
 <script src="https://cdn.tailwindcss.com"></script>
 <script>
   tailwind.config = {
@@ -18,6 +20,7 @@
   }
 </script>
 
+>>>>>>> 4fc8bc88fd4aa750a16e596878db46bdc4c67bb4
 <?php
 session_start();
 include 'db.php';
@@ -40,4 +43,8 @@ VALUES($order_id," . $c['product_id'] . ",'" . $c['grade'] . ",$price,1)");
 
 unset($_SESSION['cart']);
 header("Location: invoice.php?id=$order_id");
+<<<<<<< HEAD
 ?>
+=======
+?>
+>>>>>>> 4fc8bc88fd4aa750a16e596878db46bdc4c67bb4
