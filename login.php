@@ -1,27 +1,62 @@
 <?php
 session_start();
 include 'db.php';
-$error = "";
+$error="";
 
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $email = $_POST['email'];
-    $pass = $_POST['password'];
+if($_SERVER['REQUEST_METHOD']=="POST"){
+  $email=$_POST['email'];
+  $pass=$_POST['password'];
 
-    $res = $conn->query("SELECT * FROM users WHERE email='$email'");
-    if ($res->num_rows > 0) {
-        $user = $res->fetch_assoc();
-        if ($pass === $user['password']) {
-            $_SESSION['user'] = $user;
-            header("Location: index.php");
-            exit;
-        } else {
-            $error = "Password salah!";
-        }
-    } else {
-        $error = "Email tidak ditemukan!";
-    }
+  $res=$conn->query("SELECT * FROM users WHERE email='$email'");
+
+  if($res->num_rows>0){
+    $user=$res->fetch_assoc();
+
+    if($pass === $user['password']){
+      $_SESSION['user']=$user;
+
+      if($user['role']=="admin"){
+        header("Location: admin_dashboard.php");
+      } elseif($user['role']=="kasir"){
+        header("Location: admin_orders.php");
+      } else {
+        header("Location: index.php");
+      }
+      exit;
+    } else $error="Password salah!";
+  } else $error="Email tidak ditemukan!";
 }
 ?>
+
+<!DOCTYPE html>
+<html>
+<head>
+<script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-[#f7f4ee] flex items-center justify-center h-screen">
+
+<div class="bg-white p-8 rounded-2xl shadow w-96">
+
+<h1 class="text-2xl font-bold mb-6 text-center">Login</h1>
+
+<?php if($error): ?>
+<div class="bg-red-100 text-red-600 p-2 mb-4"><?= $error ?></div>
+<?php endif; ?>
+
+<form method="POST">
+<input name="email" placeholder="Email" class="w-full mb-3 p-2 border rounded">
+<input type="password" name="password" placeholder="Password" class="w-full mb-4 p-2 border rounded">
+
+<button class="w-full bg-[#1e3a2f] text-white p-2 rounded">
+Masuk
+</button>
+</form>
+
+</div>
+
+</body>
+</html>
 
 <!DOCTYPE html>
 <html lang="id">

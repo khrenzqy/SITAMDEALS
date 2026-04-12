@@ -88,6 +88,7 @@ body { font-family: 'DM Sans', sans-serif; }
   </div>
 </div>
 
+<!-- CHECKOUT BUTTON -->
 <a href="checkout.php"
 class="mt-6 inline-block bg-gold text-forest px-6 py-3 rounded-xl font-bold hover:opacity-90">
 Checkout
