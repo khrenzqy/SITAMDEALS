@@ -1,27 +1,20 @@
-
-<script src="https://cdn.tailwindcss.com"></script>
-<script>
-tailwind.config = {
-  theme: {
-    extend: {
-      colors: {
-        forest: '#1e3a2f',
-        moss: '#2e5c42',
-        sage: '#4a8c64',
-        leaf: '#72b88a',
-        mint: '#b8d9c5',
-        cream: '#f7f4ee',
-        gold: '#c9a84c',
-        dark: '#111a15'
-      }
-    }
-  }
-}
-</script>
-
 <?php
 session_start();
-unset($_SESSION['cart'][$_GET['i']]);
-$_SESSION['cart']=array_values($_SESSION['cart']);
+
+// 1. Pastikan tidak ada spasi atau HTML di atas tag PHP ini!
+
+// 2. Cek apakah ada parameter index yang dikirim (?i=...)
+if (isset($_GET['i'])) {
+    $index = $_GET['i'];
+    
+    // 3. Hapus barang spesifik dari session
+    unset($_SESSION['cart'][$index]);
+    
+    // 4. Reset urutan array supaya tidak ada index yang loncat/kosong
+    $_SESSION['cart'] = array_values($_SESSION['cart']);
+}
+
+// 5. Kembali ke halaman keranjang
 header("Location: cart_view.php");
+exit;
 ?>
