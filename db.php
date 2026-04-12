@@ -24,13 +24,13 @@ $user = "root";
 $password = "";
 $database = "sitamdeals";
 
-$koneksi = mysqli_connect($host, $user, $password, $database);
+$conn = mysqli_connect($host, $user, $password, $database);
 
 // Error handling
-if (!$koneksi) {
+if (!$conn) {
   die("Koneksi database gagal: " . mysqli_connect_error());
 }
 
 // Optional: set charset biar aman
-mysqli_set_charset($koneksi, "utf8");
+mysqli_set_charset($conn, "utf8");
 ?>

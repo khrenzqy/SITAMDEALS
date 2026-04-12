@@ -6,17 +6,23 @@ $error = "";
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $email = $_POST['email'];
     $pass = $_POST['password'];
+    // echo $email;
+    // echo $pass;
 
     $res = $conn->query("SELECT * FROM users WHERE email='$email'");
+    // echo $res->;
     if ($res->num_rows > 0) {
-        $user = $res->fetch_assoc();
+        // echo "ada";
         // Catatan: Gunakan password_hash() saat register agar password_verify() ini bekerja
-        if (password_verify($pass, $user['password'])) {
+        $user = $res->fetch_assoc();
+        // if (password_verify($pass, $user['password'])) {
+        if ($pass === $user['password']) { // Sementara pakai ini dulu, ganti ke password_verify() setelah register pakai password_hash()
+            // return $user;
             $_SESSION['user'] = $user;
             header("Location: index.php");
             exit;
         } else {
-            $error = "Password salah!";
+            $error = "salah kocak!";
         }
     } else {
         $error = "Email tidak ditemukan!";
