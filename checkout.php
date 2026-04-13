@@ -2,58 +2,95 @@
 session_start();
 include 'db.php';
 
-// VALIDASI
-if (empty($_SESSION['cart'])) die("Keranjang kosong");
-if (!isset($_SESSION['user'])) die("Harus login");
+// ======================
+// VALIDASI AWAL
+// ======================
+if (!isset($_SESSION['cart']) || empty($_SESSION['cart'])) {
+  die("Keranjang kosong");
+}
+
+if (!isset($_SESSION['user'])) {
+  die("Harus login");
+}
 
 $user = $_SESSION['user'];
 
+// ======================
 // INSERT ORDER
+// ======================
 $conn->query("
-INSERT INTO orders(user_id,status)
-VALUES({$user['id']},'diproses')
+  INSERT INTO orders(user_id, status)
+  VALUES({$user['id']}, 'diproses')
 ");
 
 $order_id = $conn->insert_id;
 
+// ======================
 // LOOP CART
+// ======================
 foreach ($_SESSION['cart'] as $c) {
 
-  // VALIDASI DATA
-  if (!isset($c['product_id'])) {
-    die("Cart error: product_id tidak ada");
+  // ======================
+  // AMBIL PRODUCT ID (ANTI ERROR)
+  // ======================
+  if (isset($c['product_id'])) {
+    $product_id = (int)$c['product_id'];
+  } elseif (isset($c['id'])) {
+    $product_id = (int)$c['id']; // fallback data lama
+  } else {
+    continue; // skip item rusak
   }
 
-  $product_id = (int)$c['product_id'];
+  // ======================
+  // AMBIL DATA PRODUK
+  // ======================
+  $res = $conn->query("SELECT * FROM products WHERE id = $product_id");
 
-  // AMBIL PRODUK
-  $res = $conn->query("SELECT * FROM products WHERE id=$product_id");
-
-  if ($res->num_rows == 0) continue;
+  if (!$res || $res->num_rows == 0) {
+    continue; // skip kalau produk tidak ada
+  }
 
   $p = $res->fetch_assoc();
 
-  // HITUNG HARGA
-  $price = $p['price'];
+  // ======================
+  // HITUNG HARGA BERDASARKAN GRADE
+  // ======================
+  $price = (int)$p['price'];
 
-  if ($c['grade'] == 'A') $price *= 0.85;
-  elseif ($c['grade'] == 'B') $price *= 0.7;
-  elseif ($c['grade'] == 'C') $price *= 0.5;
+  $grade = isset($c['grade']) ? $c['grade'] : 'A';
+
+  if ($grade == 'A') {
+    $price *= 0.85;
+  } elseif ($grade == 'B') {
+    $price *= 0.7;
+  } elseif ($grade == 'C') {
+    $price *= 0.5;
+  }
 
   $price = floor($price);
+
+  // ======================
+  // QTY
+  // ======================
   $qty = isset($c['qty']) ? (int)$c['qty'] : 1;
 
-  // INSERT ITEM (SUDAH FIX)
+  // ======================
+  // INSERT KE ORDER ITEMS
+  // ======================
   $conn->query("
-  INSERT INTO order_items(order_id,product_id,grade,price,qty)
-  VALUES($order_id,$product_id,'{$c['grade']}',$price,$qty)
+    INSERT INTO order_items(order_id, product_id, grade, price, qty)
+    VALUES($order_id, $product_id, '$grade', $price, $qty)
   ");
 }
 
+// ======================
 // KOSONGKAN CART
+// ======================
 unset($_SESSION['cart']);
 
-// REDIRECT
+// ======================
+// REDIRECT KE INVOICE
+// ======================
 header("Location: invoice.php?id=$order_id");
 exit;
 ?>

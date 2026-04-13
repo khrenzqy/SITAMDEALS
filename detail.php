@@ -2,15 +2,15 @@
 session_start();
 include 'db.php';
 
-if (!isset($_GET['id'])) die("Produk tidak ditemukan");
-$id = intval($_GET['id']);
+if (!isset($_GET['product_id'])) die("Produk tidak ditemukan");
+$id = intval($_GET['product_id']);
 
-$p = $conn->query("SELECT * FROM products WHERE id=$id")->fetch_assoc();
+$p = $conn->query("SELECT * FROM products WHERE product_id=$id")->fetch_assoc();
 if (!$p) die("Produk tidak ditemukan");
 ?>
 
 <!DOCTYPE html>
-<html lang="id">
+<html lang="product_id">
 <head>
 <meta charset="UTF-8">
 <title>Detail Produk</title>
@@ -116,7 +116,7 @@ function submitCart() {
 
       <!-- FORM CART -->
       <form action="add_to_cart.php" method="POST" onsubmit="return submitCart()">
-        <input type="hidden" name="id" value="<?= $p['id'] ?>">
+        <input type="hidden" name="id" value="<?= $p['product_id'] ?>">
         <input type="hidden" name="name" value="<?= $p['name'] ?>">
         <input type="hidden" name="base_price" value="<?= $p['price'] ?>">
         <input type="hidden" name="grade" id="g">

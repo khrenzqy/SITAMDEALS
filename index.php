@@ -268,8 +268,7 @@ $data = $conn->query("SELECT * FROM products");
     
 
       <!-- CARD PRODUK -->
-      <a href="detail.php?id=<?= $row['id'] ?>" class="group">
-
+<a href="detail.php?product_id=<?php echo $row['product_id']; ?>" class="group">
       <div class="bg-white rounded-2xl overflow-hidden hover:-translate-y-2 hover:shadow-2xl transition-all">
 
         <!-- IMAGE / ICON -->
