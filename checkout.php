@@ -2,95 +2,72 @@
 session_start();
 include 'db.php';
 
-// ======================
-// VALIDASI AWAL
-// ======================
-if (!isset($_SESSION['cart']) || empty($_SESSION['cart'])) {
-  die("Keranjang kosong");
-}
-
-if (!isset($_SESSION['user'])) {
-  die("Harus login");
-}
+if (empty($_SESSION['cart'])) die("Keranjang kosong");
+if (!isset($_SESSION['user'])) die("Harus login");
 
 $user = $_SESSION['user'];
 
-// ======================
-// INSERT ORDER
-// ======================
+// 1. Masukkan data awal ke tabel orders
 $conn->query("
-  INSERT INTO orders(user_id, status)
-  VALUES({$user['id']}, 'diproses')
+    INSERT INTO orders(user_id, status, total_price)
+    VALUES({$user['id']}, 'pending', 0)
 ");
-
 $order_id = $conn->insert_id;
 
-// ======================
-// LOOP CART
-// ======================
+// 2. Inisialisasi total harga mulai dari 0
+$grand_total = 0; 
+
+// 3. Proses setiap item di keranjang
 foreach ($_SESSION['cart'] as $c) {
+    $product_id = $c['product_id'];
+    $grade      = $c['grade'];
+    $qty        = (int)$c['qty'];
+print_r ($c);
+    // Ambil data produk
+    $res = $conn->query("SELECT * FROM products WHERE product_id = $product_id");
+    if (!$res || $res->num_rows == 0) continue;
+    
+    $p = $res->fetch_assoc();
 
-  // ======================
-  // AMBIL PRODUCT ID (ANTI ERROR)
-  // ======================
-  if (isset($c['product_id'])) {
-    $product_id = (int)$c['product_id'];
-  } elseif (isset($c['id'])) {
-    $product_id = (int)$c['id']; // fallback data lama
-  } else {
-    continue; // skip item rusak
-  }
+    // Tentukan kolom stok berdasarkan Grade (A, B, atau C)
+    $stock_field     = 'stock_' . strtoupper($grade);
+    $available_stock = $p[$stock_field];
 
-  // ======================
-  // AMBIL DATA PRODUK
-  // ======================
-  $res = $conn->query("SELECT * FROM products WHERE id = $product_id");
+    if ($available_stock < $qty) {
+        die("Stok grade $grade untuk produk ini tidak cukup!");
+    }
 
-  if (!$res || $res->num_rows == 0) {
-    continue; // skip kalau produk tidak ada
-  }
+    // Hitung harga diskon berdasarkan Grade
+    $price = $p['price'];
+    if ($grade == 'A')      $price *= 0.85; // Diskon 15%
+    elseif ($grade == 'B')  $price *= 0.70; // Diskon 30%
+    elseif ($grade == 'C')  $price *= 0.50; // Diskon 50%
+    $price = floor($price);
 
-  $p = $res->fetch_assoc();
+    // Masukkan ke detail item pesanan
+    $conn->query("
+        INSERT INTO order_items(order_id, product_id, grade, price, qty)
+        VALUES($order_id, $product_id, '$grade', $price, $qty)
+    ");
 
-  // ======================
-  // HITUNG HARGA BERDASARKAN GRADE
-  // ======================
-  $price = (int)$p['price'];
+    // AKUMULASI: Tambahkan harga barang ini ke total belanja
+    $grand_total += ($price * $qty);
 
-  $grade = isset($c['grade']) ? $c['grade'] : 'A';
-
-  if ($grade == 'A') {
-    $price *= 0.85;
-  } elseif ($grade == 'B') {
-    $price *= 0.7;
-  } elseif ($grade == 'C') {
-    $price *= 0.5;
-  }
-
-  $price = floor($price);
-
-  // ======================
-  // QTY
-  // ======================
-  $qty = isset($c['qty']) ? (int)$c['qty'] : 1;
-
-  // ======================
-  // INSERT KE ORDER ITEMS
-  // ======================
-  $conn->query("
-    INSERT INTO order_items(order_id, product_id, grade, price, qty)
-    VALUES($order_id, $product_id, '$grade', $price, $qty)
-  ");
+    // Update stok di tabel produk
+    $conn->query("
+        UPDATE products 
+        SET $stock_field = $stock_field - $qty
+        WHERE product_id = $product_id
+    ");
 }
 
-// ======================
-// KOSONGKAN CART
-// ======================
-unset($_SESSION['cart']);
 
-// ======================
-// REDIRECT KE INVOICE
-// ======================
-header("Location: invoice.php?id=$order_id");
+print_r($grand_total);
+
+$sql_final = "UPDATE orders SET total_price = $grand_total WHERE id = $order_id";
+$conn->query($sql_final);
+
+unset($_SESSION['cart']);
+// header("Location: order_status.php?id=$order_id");
 exit;
 ?>

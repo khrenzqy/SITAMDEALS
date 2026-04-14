@@ -1,11 +1,27 @@
 <?php
 include 'db.php';
 
-$id = $_GET['id'];
-$status = $_GET['status'];
+// Pastikan hanya menerima request POST
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $id = $_POST['order_id'] ?? null;
+    $status = $_POST['status'] ?? null;
 
-$conn->query("
-UPDATE orders SET status='$status' WHERE id=$id
-");
+    if ($id && $status) {
+        // Gunakan Prepared Statement untuk keamanan
+        $stmt = $conn->prepare("UPDATE orders SET status = ? WHERE id = ?");
+        $stmt->bind_param("si", $status, $id);
 
-header("Location: admin_orders.php");
+        if ($stmt->execute()) {
+            // Memberikan respon bersih tanpa spasi tambahan
+            echo "OK";
+        } else {
+            echo "Error Database: " . $conn->error;
+        }
+        $stmt->close();
+    } else {
+        echo "Data tidak lengkap";
+    }
+} else {
+    echo "Metode request tidak valid";
+}
+?>

@@ -1,54 +1,42 @@
 <?php
 session_start();
 
-// VALIDASI DATA POST
-if (
-  !isset($_POST['id']) ||
-  !isset($_POST['name']) ||
-  !isset($_POST['base_price']) ||
-  !isset($_POST['grade'])
-) {
-  die("Data tidak lengkap");
-}
-
-$product_id = (int)$_POST['id'];
+$id = $_POST['id'];
 $name = $_POST['name'];
-$base_price = (int)$_POST['base_price'];
+$base = $_POST['base_price'];
 $grade = $_POST['grade'];
 
-// VALIDASI GRADE
-if (!in_array($grade, ['A', 'B', 'C'])) {
-  die("Grade tidak valid");
-}
+// HITUNG HARGA
+$price = $base;
+if ($grade == "A") $price = $base * 0.85;
+if ($grade == "B") $price = $base * 0.7;
+if ($grade == "C") $price = $base * 0.5;
 
-// INIT CART
+$item = [
+  'id' => $id,
+  'name' => $name,
+  'price' => (int)$price,
+  'grade' => $grade,
+  'qty' => 1
+];
+
 if (!isset($_SESSION['cart'])) {
   $_SESSION['cart'] = [];
 }
 
-// CEK APAKAH PRODUK SUDAH ADA DI CART
+// CEK DUPLIKAT
 $found = false;
-
-foreach ($_SESSION['cart'] as &$item) {
-  if ($item['product_id'] == $product_id && $item['grade'] == $grade) {
-    $item['qty'] += 1; 
+foreach ($_SESSION['cart'] as &$c) {
+  if ($c['id'] == $id && $c['grade'] == $grade) {
+    $c['qty']++;
     $found = true;
     break;
   }
 }
-unset($item); 
-
 
 if (!$found) {
-  $_SESSION['cart'][] = [
-    'product_id' => $product_id, // 🔥 FIX UTAMA
-    'name' => $name,
-    'base_price' => $base_price,
-    'grade' => $grade,
-    'qty' => 1
-  ];
+  $_SESSION['cart'][] = $item;
 }
 
-header("Location: index.php");
+header("Location: cart.php#ringkasan");
 exit;
-?>

@@ -1,162 +1,199 @@
 <?php
 session_start();
 include 'db.php';
-$error="";
 
-if($_SERVER['REQUEST_METHOD']=="POST"){
-  $email=$_POST['email'];
-  $pass=$_POST['password'];
+$error = "";
 
-  $res=$conn->query("SELECT * FROM users WHERE email='$email'");
+// redirect kalau sudah login
+if (isset($_SESSION['user'])) {
+  $role = $_SESSION['user']['role'];
 
-  if($res->num_rows>0){
-    $user=$res->fetch_assoc();
+  if ($role == "admin") {
+    header("Location: admin_dashboard.php");
+  } elseif ($role == "kasir") {
+    header("Location: admin_orders.php");
+  } else {
+    header("Location: index.php");
+  }
+  exit;
+}
 
-    if($pass === $user['password']){
-      $_SESSION['user']=$user;
+// proses login
+if ($_SERVER['REQUEST_METHOD'] == "POST") {
 
-      if($user['role']=="admin"){
-        header("Location: admin_dashboard.php");
-      } elseif($user['role']=="kasir"){
-        header("Location: admin_orders.php");
-      } else {
-        header("Location: index.php");
+  $email = mysqli_real_escape_string($conn, $_POST['email']);
+  $pass  = $_POST['password'];
+
+  $res = $conn->query("SELECT * FROM users WHERE email='$email'");
+
+  if ($res && $res->num_rows > 0) {
+
+    $user = $res->fetch_assoc();
+
+    if ($pass === $user['password']) {
+
+      $_SESSION['user'] = $user;
+
+      switch ($user['role']) {
+        case 'admin':
+          header("Location: admin_dashboard.php");
+          break;
+        case 'kasir':
+          header("Location: admin_orders.php");
+          break;
+        default:
+          header("Location: index.php");
       }
+
       exit;
-    } else $error="Password salah!";
-  } else $error="Email tidak ditemukan!";
+
+    } else {
+      $error = "Password salah!";
+    }
+
+  } else {
+    $error = "Email tidak ditemukan!";
+  }
 }
 ?>
 
 <!DOCTYPE html>
-<html>
+<html lang="id" class="h-full">
 <head>
-<script src="https://cdn.tailwindcss.com"></script>
-</head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login – SiTamDeals</title>
 
-<body class="bg-[#f7f4ee] flex items-center justify-center h-screen">
+  <script src="https://cdn.tailwindcss.com"></script>
 
-<div class="bg-white p-8 rounded-2xl shadow w-96">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
 
-<h1 class="text-2xl font-bold mb-6 text-center">Login</h1>
-
-<?php if($error): ?>
-<div class="bg-red-100 text-red-600 p-2 mb-4"><?= $error ?></div>
-<?php endif; ?>
-
-<form method="POST">
-<input name="email" placeholder="Email" class="w-full mb-3 p-2 border rounded">
-<input type="password" name="password" placeholder="Password" class="w-full mb-4 p-2 border rounded">
-
-<button class="w-full bg-[#1e3a2f] text-white p-2 rounded">
-Masuk
-</button>
-</form>
-
-</div>
-
-</body>
-</html>
-
-<!DOCTYPE html>
-<html lang="id">
-<head>
-<meta charset="UTF-8">
-<title>Login - SiTamDeals</title>
-
-<script src="https://cdn.tailwindcss.com"></script>
-
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
-
-<script>
-tailwind.config = {
-  theme: {
-    extend: {
-      fontFamily: {
-        playfair: ['"Playfair Display"', 'serif'],
-        dm: ['"DM Sans"', 'sans-serif']
-      },
-      colors: {
-        forest: '#1e3a2f',
-        moss: '#2e5c42',
-        sage: '#4a8c64',
-        leaf: '#72b88a',
-        mint: '#b8d9c5',
-        cream: '#f7f4ee',
-        gold: '#c9a84c',
-        'gold-light': '#e8c96a',
-        dark: '#111a15'
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            playfair:['"Playfair Display"','serif'],
+            dm:['"DM Sans"','sans-serif']
+          },
+          colors: {
+            forest:'#1e3a2f', moss:'#2e5c42', sage:'#4a8c64',
+            leaf:'#72b88a', mint:'#b8d9c5', cream:'#f7f4ee',
+            gold:'#c9a84c', 'gold-light':'#e8c96a', dark:'#111a15'
+          },
+          keyframes: {
+            fadeUp:{ from:{opacity:'0',transform:'translateY(20px)'}, to:{opacity:'1',transform:'translateY(0)'} }
+          },
+          animation: {
+            'fade-up':'fadeUp 0.6s ease both',
+            'fade-up-1':'fadeUp 0.6s ease 0.1s both',
+            'fade-up-2':'fadeUp 0.6s ease 0.2s both',
+            'fade-up-3':'fadeUp 0.6s ease 0.3s both',
+            'fade-up-4':'fadeUp 0.6s ease 0.4s both'
+          }
+        }
       }
     }
-  }
-}
-</script>
+  </script>
 
-<style>
-body {
-  font-family: 'DM Sans', sans-serif;
-}
-</style>
-
+  <style>
+    body { font-family:'DM Sans',sans-serif; }
+    .input-field {
+      width:100%;
+      padding:14px 18px;
+      border:1.5px solid #e2e8e4;
+      border-radius:14px;
+      background:#f8faf9;
+      outline:none;
+      transition:all 0.25s;
+      font-size:0.9rem;
+    }
+    .input-field:focus {
+      border-color:#4a8c64;
+      box-shadow:0 0 0 4px rgba(74,140,100,0.1);
+      background:#fff;
+    }
+  </style>
 </head>
 
-<body class="min-h-screen flex items-center justify-center bg-cream">
+<body class="h-full bg-[#1a3529] overflow-hidden">
 
-<!-- BACKGROUND HERO STYLE -->
-<div class="absolute inset-0"
-style="background:
-linear-gradient(135deg, rgba(18,38,28,.9), rgba(46,92,66,.7)),
-url('https://images.unsplash.com/photo-1578916171728-46686eac8d58?w=1600&q=80') center/cover no-repeat;">
-</div>
+<div class="min-h-screen flex">
 
-<!-- LOGIN CARD -->
-<div class="relative z-10 w-full max-w-md p-8 rounded-3xl backdrop-blur-xl bg-white/10 border border-white/20 shadow-2xl">
-
-    <!-- TITLE -->
-    <h1 class="font-playfair text-3xl font-black text-cream text-center mb-2">
+  <!-- LEFT PANEL -->
+  <div class="hidden lg:flex flex-col justify-between w-[42%] p-14 text-white">
+    <div class="animate-fade-up">
+      <div class="text-2xl font-black font-playfair">
         SiTam<span class="text-gold">Deals</span>
-    </h1>
-    <p class="text-center text-cream/70 text-sm mb-6">
-        Masuk untuk melanjutkan
-    </p>
+      </div>
+    </div>
 
-    <!-- ERROR -->
-    <?php if($error): ?>
-        <div class="bg-red-400/20 border border-red-400 text-red-200 p-3 rounded-xl mb-4 text-sm text-center">
+    <div class="animate-fade-up-1">
+      <h1 class="text-5xl font-black font-playfair leading-tight">
+        Belanja Lebih <span class="text-gold">Mudah</span>
+      </h1>
+      <p class="text-white/50 mt-4 text-sm max-w-sm">
+        Platform untuk mengelola transaksi dan penjualan dengan cepat dan efisien.
+      </p>
+    </div>
+
+    <div class="text-white/30 text-xs">
+      © 2026 SiTamDeals
+    </div>
+  </div>
+
+  <!-- RIGHT PANEL -->
+  <div class="flex-1 flex items-center justify-center p-6">
+
+    <div class="w-full max-w-md">
+
+      <div class="bg-white rounded-3xl shadow-2xl p-10 animate-fade-up">
+
+        <!-- HEADER -->
+        <h1 class="font-playfair text-3xl font-black text-[#1e3a2f]">
+          Welcome Back 👋
+        </h1>
+        <p class="text-gray-400 text-sm mt-1 mb-6">
+          Login untuk melanjutkan
+        </p>
+
+        <!-- ERROR -->
+        <?php if ($error): ?>
+          <div class="bg-red-50 border border-red-200 text-red-600 text-sm p-3 rounded-xl mb-4 text-center">
             <?= $error ?>
-        </div>
-    <?php endif; ?>
+          </div>
+        <?php endif; ?>
 
-    <!-- FORM -->
-    <form method="POST" class="space-y-5">
+        <!-- FORM -->
+        <form method="POST" class="space-y-4">
 
-        <div>
-            <label class="text-sm text-cream/70">Email</label>
-            <input type="email" name="email"
-            class="w-full mt-1 px-4 py-3 rounded-xl bg-white/20 text-cream placeholder:text-cream/50 border border-white/20 focus:outline-none focus:ring-2 focus:ring-gold transition"
-            placeholder="Masukkan email"
-            required>
-        </div>
+          <div>
+            <label class="text-xs font-bold text-[#1e3a2f]/70 uppercase">Email</label>
+            <input type="email" name="email" class="input-field mt-2" placeholder="contoh@email.com" required>
+          </div>
 
-        <div>
-            <label class="text-sm text-cream/70">Password</label>
-            <input type="password" name="password"
-            class="w-full mt-1 px-4 py-3 rounded-xl bg-white/20 text-cream placeholder:text-cream/50 border border-white/20 focus:outline-none focus:ring-2 focus:ring-gold transition"
-            placeholder="Masukkan password"
-            required>
-        </div>
+          <div>
+            <label class="text-xs font-bold text-[#1e3a2f]/70 uppercase">Password</label>
+            <input type="password" name="password" class="input-field mt-2" placeholder="••••••••" required>
+          </div>
 
-        <button type="submit"
-        class="w-full bg-gold text-forest font-bold py-3 rounded-xl shadow-lg hover:bg-gold-light hover:-translate-y-1 transition-all">
-            Masuk
-        </button>
+          <button type="submit"
+            class="w-full py-4 rounded-xl text-white font-bold bg-gradient-to-r from-[#1e3a2f] to-[#2e5c42] hover:scale-[1.02] transition">
+            Login →
+          </button>
 
-    </form>
+        </form>
 
-    <!-- FOOTER -->
-    <p class="text-center text-xs text-cream/50 mt-6">
-        &copy; 2026 SiTamDeals
-    </p>
+        <!-- FOOTER -->
+        <p class="text-center text-sm text-gray-400 mt-6">
+          Belum punya akun?
+          <a href="register.php" class="text-[#1e3a2f] font-bold">Daftar</a>
+        </p>
+
+      </div>
+
+    </div>
+  </div>
 
 </div>
 
